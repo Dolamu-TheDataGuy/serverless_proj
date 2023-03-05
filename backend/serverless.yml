@@ -8,6 +8,8 @@ plugins:
   - serverless-webpack
   - serverless-iam-roles-per-function
   - serverless-plugin-tracing
+  - serverless-reqvalidator-plugin
+  - serverless-aws-documentation
 
 provider:
   name: aws
@@ -15,7 +17,7 @@ provider:
   #lambdaHashingVersion: '20201221'
 
   stage: ${opt:stage, 'dev'}
-  #region: ${opt:region, 'us-east-1'}
+  region: ${opt:region, 'us-east-1'}
 
   tracing:
     lambda: true
@@ -24,30 +26,68 @@ provider:
   # Use these variables in the functions and resouorces section below. For example, 
   # ${self:provider.environment.ATTACHMENT_S3_BUCKET}
   environment:
-    TODOS_TABLE: Todos-${self:provider.stage}
-    TODOS_CREATED_AT_INDEX: CreatedAtIndex
-    ATTACHMENT_S3_BUCKET: serverless-c4-todo-images-${self:provider.stage}
+    PROJECT_NAME: serverless-todo-app
+    TODOS_TABLE: serverless-todo-app-${self:provider.stage}
+    #TODOS_CREATED_AT_INDEX: CreatedAtIndex
+    ATTACHMENT_S3_BUCKET: serverless-todo-app-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
 
-  logs:
-    # Enable API Gateway logs
-    restApi: true
+custom:
+  documentation:
+    api:
+      info:
+        version: '1.0.0'
+        title: 'serverless-api'
+        description: 'serverless-api'
+    models:
+      - name: CreateTodoRequest
+        contentType: "application/json" 
+        schema:
+          required:
+            - name
+            - dueDate
+          properties:
+            name:
+              minLength: 1
+              type: string
+            dueDate:
+              type: string
+      - name: UpdateTodoRequest
+        contentType: "application/json" 
+        schema:
+          required:
+            - name
+            - dueDate
+            - done
+          properties:
+            name:
+              minLength: 1
+              type: string
+            dueDate:
+              type: string
+            done:
+              type: boolean
 
-  iam:
-    role:
-      statements:
-        - Effect: Allow
-          Action:
-            - xray:PutTelemetryRecords
-            - xray:PutTraceSegments
-          Resource: "*"
+
+  #logs:
+    # Enable API Gateway logs
+    #restApi: true
+
+  #iam:
+   # role:
+     # statements:
+    #    - Effect: Allow
+     #     Action:
+      #       - xray:PutTelemetryRecsords
+      #      - xray:PutTraceSegments
+      #    Resource: "*"
 
 
 functions:
 
   Auth:
     handler: src/lambda/auth/auth0Authorizer.handler
-
+ 
   # TODO: Configure this function - 
   # Provide iamRoleStatements property for performing Actions on DynamoDB
   GetTodos:
@@ -58,6 +98,22 @@ functions:
           path: todos
           cors: true
           authorizer: Auth
+    iamRoleStatementsName: ${self:provider.environment.PROJECT_NAME}-get-todo-role-${self:provider.stage}
+    iamRoleStatementsName:
+      - Effect: Allow
+        Action:
+          - dynamodb: Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+      - Effect: Allow
+        Action:
+          - xray: PutTraceSegments
+        Resources:
+          - '*'
+
+
+
+
+
 
   # TODO: Configure this function - 
   # Provide iamRoleStatements property. Decide the Actions and AWS Resource. 
