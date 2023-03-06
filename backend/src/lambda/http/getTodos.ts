@@ -1,13 +1,10 @@
 import 'source-map-support/register'
 
-import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
+import {APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler} from 'aws-lambda';
+import {getAllToDo} from "../../businessLogic/ToDo";
 
-import {getAllToDo} from '../../businessLogic/ToDo.ts'
-
-
-export const handler: APIGatewayProxyEvent = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyHandler> => {
-// TODO: Get all TODO items for a current user
-    // Write your code here
+export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+    // TODO: Get all TODO items for a current user
     console.log("Processing Event ", event);
     const authorization = event.headers.Authorization;
     const split = authorization.split(' ');
@@ -16,12 +13,12 @@ export const handler: APIGatewayProxyEvent = async (event: APIGatewayProxyEvent)
     const toDos = await getAllToDo(jwtToken);
 
     return {
-      statusCode: 200,
-      headers: {
-        "Access-control-Allow-Origin": "*"
-      },
-      body: JSON.stringify({
-        "items": toDos,
-      }),
+        statusCode: 200,
+        headers: {
+            "Access-Control-Allow-Origin": "*",
+        },
+        body: JSON.stringify({
+            "items": toDos,
+        }),
     }
 };
