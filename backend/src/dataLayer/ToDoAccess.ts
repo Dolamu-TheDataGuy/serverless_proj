@@ -14,7 +14,7 @@ export class ToDoAccess {
     }
 
     async getAllToDo(userId: string): Promise<TodoItem[]> {
-        console.log("Getting all todo");
+        console.log("Getting all the todo list content");
 
         const params = {
             TableName: this.todoTable,
@@ -27,29 +27,29 @@ export class ToDoAccess {
             }
         };
 
-        const result = await this.docClient.query(params).promise();
-        console.log(result);
-        const items = result.Items;
+        const result_output = await this.docClient.query(params).promise();
+        console.log(result_output);
+        const items_list = result_output.Items;
 
-        return items as TodoItem[];
+        return items_list as TodoItem[];
     }
 
     async createToDo(todoItem: TodoItem): Promise<TodoItem> {
-        console.log("Creating new todo");
+        console.log("Creating a new todo item");
 
         const params = {
             TableName: this.todoTable,
             Item: todoItem,
         };
 
-        const result = await this.docClient.put(params).promise();
-        console.log(result);
+        const result_create_todo = await this.docClient.put(params).promise();
+        console.log(result_create_todo);
 
         return todoItem as TodoItem;
     }
 
     async updateToDo(todoUpdate: TodoUpdate, todoId: string, userId: string): Promise<TodoUpdate> {
-        console.log("Updating todo");
+        console.log("Updating a todo content");
 
         const params = {
             TableName: this.todoTable,
@@ -79,7 +79,7 @@ export class ToDoAccess {
     }
 
     async deleteToDo(todoId: string, userId: string): Promise<string> {
-        console.log("Deleting todo");
+        console.log("Deleting a todo content");
 
         const params = {
             TableName: this.todoTable,
@@ -89,14 +89,14 @@ export class ToDoAccess {
             },
         };
 
-        const result = await this.docClient.delete(params).promise();
-        console.log(result);
+        const result_delete_todo = await this.docClient.delete(params).promise();
+        console.log(result_delete_todo);
 
         return "" as string;
     }
 
     async generateUploadUrl(todoId: string): Promise<string> {
-        console.log("Generating URL");
+        console.log("Generating a URL for content list");
 
         const url = this.s3Client.getSignedUrl('putObject', {
             Bucket: this.s3BucketName,
